@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0a0f1a">
+  <meta name="description" content="ThreatTrace — local-first defensive cybersecurity log analysis dashboard.">
+  <title>ThreatTrace — Cybersecurity Log Analyzer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- Chart.js is optional. If unavailable/offline, dashboard.js draws local canvas charts. -->
+  <script async src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+  <script defer src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#overview" aria-label="ThreatTrace overview">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" role="img"><path d="M24 4 40 10v12c0 10.2-6.7 17.4-16 22C14.7 39.4 8 32.2 8 22V10L24 4Z"/><path d="M24 12v23M15 24h18"/><circle cx="24" cy="24" r="7"/></svg>
+        </span>
+        <span class="brand-copy"><strong>THREAT<span>TRACE</span></strong><small>DEFENSIVE INTELLIGENCE</small></span>
+      </a>
+      <div class="sidebar-label">WORKSPACE</div>
+      <nav class="navigation" aria-label="Primary navigation">
+        <button class="nav-item active" data-view="overview"><span class="nav-icon">◈</span> Overview</button>
+        <button class="nav-item" data-view="events"><span class="nav-icon">≋</span> Log events <span class="nav-count" id="nav-event-count">0</span></button>
+        <button class="nav-item" data-view="alerts"><span class="nav-icon">⌁</span> Security alerts <span class="nav-count danger-count" id="nav-alert-count">0</span></button>
+        <button class="nav-item" data-view="rules"><span class="nav-icon">⌘</span> Detection rules</button>
+        <button class="nav-item" data-view="reports"><span class="nav-icon">▤</span> Reports & export</button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="local-card">
+        <div class="local-card-top"><span class="pulse-dot"></span><span>LOCAL ANALYSIS</span><span class="lock-icon">▣</span></div>
+        <p>Log processing stays on this machine. No log data is sent to third-party services.</p>
+      </div>
+      <div class="sidebar-footer"><span class="status-dot"></span> ENGINE READY <span class="version">v1.0.0</span></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobile-menu" aria-label="Toggle navigation">☰</button>
+        <div class="breadcrumbs"><span>THREATTRACE</span><span class="crumb-slash">/</span><strong id="view-breadcrumb">OVERVIEW</strong></div>
+        <div class="topbar-right"><span class="live-indicator"><span class="pulse-dot"></span> LOCAL ENGINE</span><span class="topbar-divider"></span><span class="topbar-date" id="current-date">READY FOR ANALYSIS</span></div>
+      </header>
+
+      <section class="page-view active" id="view-overview" data-title="OVERVIEW">
+        <div class="page-heading">
+          <div><div class="eyebrow"><span class="eyebrow-line"></span> SECURITY OBSERVABILITY</div><h1>Threat <span>Overview</span></h1><p class="page-subtitle">Detect suspicious activity. Trace threats. Strengthen security.</p></div>
+          <div class="heading-actions"><button class="button button-secondary" id="refresh-button"><span class="button-symbol">↻</span> Refresh</button><button class="button button-secondary" id="clear-button">Clear results</button><button class="button button-primary" id="sample-button"><span class="button-symbol">▶</span> Load sample logs</button></div>
+        </div>
+
+        <div class="source-strip">
+          <div class="source-icon">⇧</div>
+          <div class="source-copy"><strong>Analyze an authentication log</strong><span>Choose a plain-text .log or .txt file (up to 5 MB), or use synthetic sample data.</span></div>
+          <form id="upload-form" class="upload-actions">
+            <label class="button button-secondary upload-label" for="log-file"><span>＋</span> Choose log file</label>
+            <input id="log-file" name="file" type="file" accept=".log,.txt,text/plain" hidden>
+            <span class="file-name" id="file-name">No file selected</span>
+            <button class="button button-primary" id="analyze-button" type="submit" disabled>Analyze file <span>→</span></button>
+          </form>
+        </div>
+
+        <div class="notice-row" id="status-message" role="status" aria-live="polite"><span class="notice-icon">i</span><span>Ready. Load synthetic sample logs or upload an authorized log file to begin.</span></div>
+
+        <div class="section-title-row"><div><h2>Security telemetry</h2><p>Metrics update from the latest backend analysis.</p></div><span class="data-stamp" id="generated-at">NO ANALYSIS LOADED</span></div>
+        <div class="metrics-grid">
+          <article class="metric-card metric-cyan"><div class="metric-top"><span class="metric-label">TOTAL EVENTS</span><span class="metric-glyph">⌁</span></div><div class="metric-value" id="metric-total">0</div><div class="metric-foot"><span class="metric-foot-dot"></span> Parsed authentication events</div><div class="metric-accent"></div></article>
+          <article class="metric-card metric-green"><div class="metric-top"><span class="metric-label">SUCCESSFUL LOGINS</span><span class="metric-glyph">✓</span></div><div class="metric-value" id="metric-success">0</div><div class="metric-foot"><span class="positive-text">●</span> Accepted authentication</div><div class="metric-accent"></div></article>
+          <article class="metric-card metric-red"><div class="metric-top"><span class="metric-label">FAILED LOGINS</span><span class="metric-glyph">×</span></div><div class="metric-value" id="metric-failed">0</div><div class="metric-foot"><span class="negative-text">●</span> Rejected authentication</div><div class="metric-accent"></div></article>
+          <article class="metric-card metric-purple"><div class="metric-top"><span class="metric-label">SOURCE IPs</span><span class="metric-glyph">◎</span></div><div class="metric-value" id="metric-ips">0</div><div class="metric-foot">Unique addresses observed</div><div class="metric-accent"></div></article>
+          <article class="metric-card metric-amber"><div class="metric-top"><span class="metric-label">SUSPICIOUS EVENTS</span><span class="metric-glyph">⚑</span></div><div class="metric-value" id="metric-suspicious">0</div><div class="metric-foot"><span id="metric-alert-count">0 alerts</span> flagged by rules</div><div class="metric-accent"></div></article>
+        </div>
+
+        <div class="charts-grid">
+          <article class="panel chart-panel"><div class="panel-heading"><div><h3>Authentication activity</h3><p>Successful vs. failed events over time</p></div><span class="panel-icon">⌁</span></div><div class="chart-wrap"><canvas id="timeline-chart" role="img" aria-label="Authentication activity chart"></canvas><div class="chart-empty" id="timeline-empty">Analysis data will appear here.</div></div><div class="chart-legend"><span><i class="legend-dot cyan"></i> Success</span><span><i class="legend-dot red"></i> Failed</span></div></article>
+          <article class="panel chart-panel"><div class="panel-heading"><div><h3>Top failed-login sources</h3><p>Addresses with the most failed events</p></div><span class="panel-icon">⌗</span></div><div class="chart-wrap bar-chart-wrap"><canvas id="ip-chart" role="img" aria-label="Failed login counts by source IP"></canvas><div class="chart-empty" id="ip-empty">No failed login sources yet.</div></div><div class="chart-note">Counts are grouped from parsed events only.</div></article>
+        </div>
+
+        <div class="lower-grid">
+          <article class="panel"><div class="panel-heading"><div><h3>Recent security alerts</h3><p>Rule matches requiring review</p></div><button class="text-button" data-go="alerts">View all <span>→</span></button></div><div id="alert-preview" class="alert-list"><div class="empty-state compact"><span>⌁</span><strong>No alerts to display</strong><p>Analyze logs to discover potential patterns.</p></div></div></article>
+          <article class="panel severity-panel"><div class="panel-heading"><div><h3>Event severity</h3><p>Severity assigned by transparent rules</p></div><span class="panel-icon">◉</span></div><div id="severity-bars" class="severity-bars"><div class="empty-state compact"><span>◉</span><strong>Waiting for event data</strong><p>Load a log to populate severity counts.</p></div></div><div class="severity-footnote">High severity marks events inside a qualifying failure window.</div></article>
+        </div>
+      </section>
+
+      <section class="page-view" id="view-events" data-title="LOG EVENTS">
+        <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> EVENT EXPLORER</div><h1>Log <span>Events</span></h1><p class="page-subtitle">Search and filter parsed authentication events.</p></div><button class="button button-secondary" id="events-refresh">↻ Refresh events</button></div>
+        <div class="panel filters-panel"><div class="filters-heading"><div><h3>Filter events</h3><p>Filters apply to the active analysis.</p></div><button class="text-button" id="reset-filters">Reset filters</button></div>
+          <form id="filters-form" class="filters-grid">
+            <label class="field search-field"><span>SEARCH</span><input id="filter-q" type="search" placeholder="Username, IP, host…" autocomplete="off"></label>
+            <label class="field"><span>EVENT TYPE</span><select id="filter-type"><option value="">All events</option><option value="success_login">Successful login</option><option value="failed_login">Failed login</option></select></label>
+            <label class="field"><span>SOURCE IP</span><input id="filter-ip" type="text" placeholder="e.g. 203.0.113.44" maxlength="64"></label>
+            <label class="field"><span>SEVERITY</span><select id="filter-severity"><option value="">All severities</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option><option value="info">Info</option></select></label>
+            <label class="field"><span>FROM (LOCAL TIME)</span><input id="filter-start" type="datetime-local"></label>
+            <label class="field"><span>TO (LOCAL TIME)</span><input id="filter-end" type="datetime-local"></label>
+            <div class="filter-submit"><button class="button button-primary" type="submit">Apply filters <span>→</span></button></div>
+          </form>
+        </div>
+        <article class="panel table-panel"><div class="panel-heading table-heading"><div><h3>Parsed event stream</h3><p id="event-result-count">0 events found</p></div><a class="button button-secondary button-small" href="/api/export/csv">Export CSV ↓</a></div><div class="table-scroll"><table class="event-table"><thead><tr><th>TIME (UTC)</th><th>EVENT</th><th>USERNAME</th><th>SOURCE IP</th><th>HOST</th><th>SEVERITY</th></tr></thead><tbody id="event-table-body"><tr><td colspan="6" class="table-empty">No events loaded. Load sample logs from Overview.</td></tr></tbody></table></div><div class="table-foot"><span id="event-page-info">Showing 0 events</span><div class="pager"><button class="button button-secondary button-small" id="previous-page" disabled>← Previous</button><button class="button button-secondary button-small" id="next-page" disabled>Next →</button></div></div></article>
+      </section>
+
+      <section class="page-view" id="view-alerts" data-title="SECURITY ALERTS">
+        <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> DETECTION CENTER</div><h1>Security <span>Alerts</span></h1><p class="page-subtitle">Evidence-based indicators with plain-language explanations.</p></div><button class="button button-secondary" id="alerts-refresh">↻ Refresh alerts</button></div>
+        <div class="alert-summary-strip"><div><span class="summary-kicker">ACTIVE RULE MATCHES</span><strong id="alerts-total">0</strong></div><div><span class="summary-kicker">SEVERITY</span><strong class="danger-text">High</strong></div><div><span class="summary-kicker">DETECTION</span><strong>Failed login burst</strong></div></div>
+        <div id="alerts-list" class="full-alert-list"><div class="panel empty-state"><span>⌁</span><strong>No suspicious patterns detected</strong><p>Load sample data or analyze an authorized authentication log.</p></div></div>
+        <div class="info-callout"><span class="callout-symbol">i</span><div><strong>Interpretation matters</strong><p>An alert is a signal for investigation, not proof of compromise. Shared IP addresses, automation, stale credentials, and incomplete logs can all produce false positives.</p></div></div>
+      </section>
+
+      <section class="page-view" id="view-rules" data-title="DETECTION RULES">
+        <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> DETECTION CONFIGURATION</div><h1>Detection <span>Rules</span></h1><p class="page-subtitle">Understand the current heuristic and tune it for your log set.</p></div></div>
+        <article class="panel rule-card"><div class="rule-title-row"><span class="rule-icon">⌁</span><div><div class="rule-id">TT-AUTH-001</div><h3>Possible SSH brute-force activity</h3></div><span class="severity-pill high">HIGH</span></div><p class="rule-description">Flag a source IP when the number of failed login events reaches the configured threshold inside a rolling time window.</p><div class="rule-logic"><span>CONDITION</span><code>failed_login_count(ip, time_window) ≥ threshold</code></div>
+          <form id="rules-form" class="rule-settings"><label class="field"><span>FAILURE THRESHOLD</span><input id="rule-threshold" type="number" min="2" max="100" value="5" required><small>Allowed range: 2–100 failed events.</small></label><label class="field"><span>TIME WINDOW (MINUTES)</span><input id="rule-window" type="number" min="1" max="1440" value="10" required><small>Allowed range: 1–1440 minutes.</small></label><div class="rule-actions"><button class="button button-primary" type="submit">Apply & analyze sample <span>→</span></button><button class="button button-secondary" type="button" id="restore-rule-defaults">Restore defaults</button></div></form>
+        </article>
+        <div class="two-col-info"><article class="panel info-panel"><h3>Why this rule exists</h3><p>Repeated failures from one address over a short interval may indicate password guessing, a misconfigured service, or a user repeatedly entering an incorrect password. The grouping helps analysts prioritize investigation.</p></article><article class="panel info-panel"><h3>Known limitations</h3><p>It does not correlate NATs, distributed attempts across multiple IPs, successful compromise, account lockouts, geolocation, or other telemetry. Missing or duplicated records affect counts. A threshold match is not proof of an attack.</p></article></div>
+      </section>
+
+      <section class="page-view" id="view-reports" data-title="REPORTS & EXPORT">
+        <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> REPORT CENTER</div><h1>Reports <span>& Export</span></h1><p class="page-subtitle">Download a snapshot of the latest local analysis.</p></div></div>
+        <div class="report-grid"><article class="panel report-card"><div class="report-icon csv-icon">CSV</div><h3>Event report</h3><p>Tabular event details with UTC timestamps, source IPs, severity, suspicious flags, and parser line references.</p><a class="button button-secondary" href="/api/export/csv">Download CSV <span>↓</span></a></article><article class="panel report-card"><div class="report-icon json-icon">{ }</div><h3>Complete JSON report</h3><p>Analysis summary, detection settings, normalized events, alert explanations, and malformed-line diagnostics.</p><a class="button button-primary" href="/api/export/json">Download JSON <span>↓</span></a></article></div>
+        <article class="panel report-snapshot"><div class="panel-heading"><div><h3>Latest report snapshot</h3><p>Calculated from the active analysis response.</p></div><span class="panel-icon">▤</span></div><div class="snapshot-grid"><div><span>Events parsed</span><strong id="report-events">0</strong></div><div><span>Alerts raised</span><strong id="report-alerts">0</strong></div><div><span>Malformed lines</span><strong id="report-malformed">0</strong></div><div><span>Generated at</span><strong class="snapshot-time" id="report-time">—</strong></div></div><div id="malformed-preview" class="malformed-preview"></div></article>
+      </section>
+      <footer class="page-footer"><span>THREATTRACE <b>•</b> LOCAL-FIRST DEFENSIVE ANALYSIS</span><span>Use only logs you are authorized to inspect.</span></footer>
+    </main>
+  </div>
+</body>
+</html>

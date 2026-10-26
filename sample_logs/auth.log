@@ -1,0 +1,14 @@
+# ThreatTrace synthetic demonstration log — all users, times, hosts, and addresses are fictional.
+Oct 23 09:00:02 lab-gateway sshd[1101]: Accepted publickey for maya from 192.0.2.18 port 50122 ssh2
+Oct 23 09:01:11 lab-gateway sshd[1103]: Failed password for invalid user admin from 203.0.113.44 port 51201 ssh2
+Oct 23 09:01:40 lab-gateway sshd[1104]: Failed password for root from 203.0.113.44 port 51208 ssh2
+Oct 23 09:02:12 lab-gateway sshd[1105]: Failed password for deploy from 203.0.113.44 port 51217 ssh2
+Oct 23 09:02:58 lab-gateway sshd[1106]: Failed password for test from 203.0.113.44 port 51231 ssh2
+Oct 23 09:03:44 lab-gateway sshd[1107]: Failed password for admin from 203.0.113.44 port 51249 ssh2
+Oct 23 09:04:20 lab-gateway sshd[1108]: Failed password for maya from 203.0.113.44 port 51271 ssh2
+Oct 23 09:04:55 lab-gateway sshd[1109]: Accepted password for anas from 198.51.100.27 port 53402 ssh2
+Oct 23 09:05:07 lab-gateway sshd[1110]: Failed password for guest from 198.51.100.71 port 53408 ssh2
+Oct 23 09:15:50 lab-gateway sshd[1111]: Failed password for devops from 203.0.113.44 port 51999 ssh2
+Oct 23 09:18:05 lab-gateway sshd[1112]: Accepted publickey for analyst from 192.0.2.21 port 51000 ssh2
+This is a malformed synthetic record that should be reported, not executed.
+{"timestamp":"2026-10-23T09:19:00Z","event_type":"login_failed","username":"qa-user","source_ip":"198.51.100.88","host":"lab-gateway"}

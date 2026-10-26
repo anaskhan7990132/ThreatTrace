@@ -4,12 +4,6 @@ import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-try:
-    from dotenv import load_dotenv
-    load_dotenv(BASE_DIR / ".env", override=False)
-except ImportError:
-    # Safe fallback: environment variables can still be supplied by the shell.
-    pass
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 MAX_REQUEST_BYTES = MAX_UPLOAD_BYTES + 128 * 1024  # multipart form overhead
 MAX_LOG_LINES = 10_000
@@ -25,4 +19,3 @@ SECRET_KEY = os.environ.get("THREATTRACE_SECRET_KEY", "local-development-only-ch
 HOST = os.environ.get("THREATTRACE_HOST", "127.0.0.1")
 PORT = int(os.environ.get("THREATTRACE_PORT", "5000"))
 DEBUG = os.environ.get("THREATTRACE_DEBUG", "0").lower() in {"1", "true", "yes"}
-GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b").strip() or "openai/gpt-oss-120b"
